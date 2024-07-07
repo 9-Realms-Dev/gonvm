@@ -1,4 +1,4 @@
-package node
+package nvm
 
 import (
 	"archive/tar"
