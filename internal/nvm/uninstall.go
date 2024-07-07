@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func removeVersionByPath(versionPath string) error {
+func RemoveVersionByPath(versionPath string) error {
 	errorStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("red"))
 
 	err := os.RemoveAll(versionPath)

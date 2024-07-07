@@ -76,7 +76,7 @@ func DownloadAndSetupNode(url, installPath string) error {
 	return os.Remove(fileName)
 }
 
-func getNodeVersionURL(version string) (string, error) {
+func GetNodeVersionURL(version string) (string, error) {
 	switch runtime.GOOS {
 	case "windows":
 		switch runtime.GOARCH {
@@ -94,7 +94,7 @@ func getNodeVersionURL(version string) (string, error) {
 	}
 }
 
-func getInstallPath(version string) (string, error) {
+func GetInstallPath(version string) (string, error) {
 	switch runtime.GOOS {
 	case "windows", "darwin", "linux":
 		return setDirectoryPath(version)
