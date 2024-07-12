@@ -197,7 +197,7 @@ func GetRemoteVersions(version string) ([]string, error) {
 }
 
 func GetRemoteLatestVersion() (string, error) {
-	url := "https://nodejs.org/en/"
+	url := "https://nodejs.org/dist/latest/"
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", fmt.Errorf("error making HTTP request: %w", err)
@@ -211,10 +211,11 @@ func GetRemoteLatestVersion() (string, error) {
 		}
 
 		var latestVersion string
-		doc.Find("a[title]").Each(func(i int, s *goquery.Selection) {
-			title, _ := s.Attr("title")
-			if regexp.MustCompile(`Current`).MatchString(title) {
-				latestVersion, _ = s.Attr("data-version")
+		doc.Find("a").Each(func(i int, s *goquery.Selection) {
+			href, _ := s.Attr("href")
+			ok, version := matchNodeArchive(href)
+			if ok {
+				latestVersion = version
 				return
 			}
 		})
@@ -273,18 +274,26 @@ func GetRemoteLTSVersion() (string, error) {
 			return "", fmt.Errorf("could not find latest LTS version")
 		}
 
-		question := fmt.Sprintf("Would you like to set %s as the default LTS version?", ltsVersion)
-		setLTS, err := tui.ConfirmPrompt(question)
+		// Check alias.toml to see what lts version is set
+		aliasVersion, err := GetAliasedVersion("lts")
 		if err != nil {
-			return "", fmt.Errorf("error during user prompt: %w", err)
+			return "", fmt.Errorf("error getting aliased version: %w", err)
 		}
 
-		if setLTS {
-			err := SetAliasedVersion("lts", ltsVersion)
+		if aliasVersion != ltsVersion {
+			question := fmt.Sprintf("Would you like to set %s as the default LTS version?", ltsVersion)
+			setLTS, err := tui.ConfirmPrompt(question)
 			if err != nil {
-				return "", fmt.Errorf("error setting aliased version: %w", err)
+				return "", fmt.Errorf("error during user prompt: %w", err)
 			}
-			fmt.Println(tui.InfoStyle.Render(fmt.Sprintf("Set %s as the latest LTS version", ltsVersion)))
+
+			if setLTS {
+				err := SetAliasedVersion("lts", ltsVersion)
+				if err != nil {
+					return "", fmt.Errorf("error setting aliased version: %w", err)
+				}
+				fmt.Println(tui.InfoStyle.Render(fmt.Sprintf("Set %s as the latest LTS version", ltsVersion)))
+			}
 		}
 
 		return ltsVersion, nil
@@ -388,6 +397,18 @@ func extractVersionNumber(href string) string {
 		return matches[0]
 	}
 	return ""
+}
+
+func matchNodeArchive(filename string) (bool, string) {
+	pattern := `^node-(v\d+\.\d+\.\d+)\.tar\.gz$`
+	re := regexp.MustCompile(pattern)
+
+	matches := re.FindStringSubmatch(filename)
+	if matches == nil {
+		return false, ""
+	}
+
+	return true, matches[1] // matches[1] contains the version number
 }
 
 func CheckValidVersionPattern(version string) bool {

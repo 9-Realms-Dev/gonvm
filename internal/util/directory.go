@@ -39,7 +39,7 @@ func SetDefaultDirectory() (string, error) {
 	aliasFile := filepath.Join(nvmDir, "alias.toml")
 
 	v := viper.New()
-	v.SetConfigFile(aliasFile)
+	v.SetConfigName("alias")
 	v.SetConfigType("toml")
 	v.AddConfigPath(nvmDir)
 

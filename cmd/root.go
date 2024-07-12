@@ -10,7 +10,7 @@ var (
 	userLicense string
 
 	rootCmd = &cobra.Command{
-		Use:   "go_nvm",
+		Use:   "gonvm",
 		Short: "Go based nvm",
 		Long:  "Go base node version manager with tui",
 		Run:   ActivateTui,

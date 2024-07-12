@@ -10,7 +10,7 @@ import (
 )
 
 var useCmd = &cobra.Command{
-	Use:   "go_nvm use [node version]",
+	Use:   "use",
 	Short: "This will set active node version",
 	Long:  "Use will take over the symlink to the active node version",
 	Args:  cobra.MinimumNArgs(1),
