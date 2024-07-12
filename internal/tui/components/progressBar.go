@@ -31,7 +31,7 @@ func (m progressModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	case int64:
-		m.current = msg
+		m.current = m.current + msg
 		m.percent = float64(m.current) / float64(m.total)
 		if m.current >= m.total {
 			m.done = true

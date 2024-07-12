@@ -22,16 +22,6 @@ RUN useradd -m -s /bin/bash gouser
 # Switch to the new user
 USER gouser
 
-# Set up environment variables
-ENV GO_NVM_DIR="/home/gouser/.go_nvm"
-ENV NVM_CURRENT="${GO_NVM_DIR}/current/bin"
-ENV PATH="${NVM_CURRENT}:${PATH}"
-
-# Add environment variables to .bashrc
-RUN echo "export GO_NVM_DIR=${GO_NVM_DIR}" >> /home/gouser/.bashrc && \
-    echo "export NVM_CURRENT=${NVM_CURRENT}" >> /home/gouser/.bashrc && \
-    echo "export PATH=${NVM_CURRENT}:\$PATH" >> /home/gouser/.bashrc
-
 # Set the working directory to the user's home
 WORKDIR /home/gouser
 
