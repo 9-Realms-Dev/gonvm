@@ -35,7 +35,10 @@ func CreateSymlink(versionPath string) (bool, error) {
 	currentSymlink := filepath.Join(nvmDir, "current")
 
 	// Remove existing symlink if it exists
-	os.Remove(currentSymlink)
+	err = os.Remove(currentSymlink)
+	if err != nil && !os.IsNotExist(err) {
+		return false, fmt.Errorf("error removing existing symlink: %w", err)
+	}
 
 	err = os.Symlink(versionPath, currentSymlink)
 	if err != nil {

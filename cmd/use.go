@@ -40,14 +40,12 @@ func UseNvm(cmd *cobra.Command, args []string) error {
 		}
 
 		if confirmation {
-			return InstallNode(cmd, args)
+			InstallNode(cmd, args)
 		} else {
 			util.Logger.Warnf("node %s was not installed", nodeVersion)
 			return nil
 		}
 	}
 
-	nvm.SetCurrentVersion(versionPath)
-	util.Logger.Infof("now using node %s", nodeVersion)
-	return nil
+	return nvm.SetCurrentVersion(versionPath)
 }

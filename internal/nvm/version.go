@@ -376,7 +376,8 @@ func LocalVersions() ([]string, error) {
 }
 
 func IsNodeVersionInstalled(versionPath string) bool {
-	_, err := os.Stat(versionPath)
+	// Check if the version path exists and has a bin directory inside it
+	_, err := os.Stat(filepath.Join(versionPath, "bin"))
 	if err != nil {
 		if os.IsNotExist(err) {
 			fmt.Println(tui.ErrorStyle.Render(fmt.Sprintf("Error: Could not find %s", versionPath)))
