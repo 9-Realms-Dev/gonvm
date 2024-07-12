@@ -261,7 +261,6 @@ func GetRemoteLTSVersion() (string, error) {
 		var ltsVersionLink string
 		doc.Find("a").Each(func(i int, s *goquery.Selection) {
 			title := s.Text()
-			util.Logger.Debugf("Title: %s", title)
 			if regexp.MustCompile(`LTS`).MatchString(title) {
 				ltsVersionLink, _ = s.Attr("href")
 				return

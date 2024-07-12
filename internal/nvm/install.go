@@ -2,6 +2,7 @@ package nvm
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"fmt"
 	tui "github.com/9-Realms-Dev/go_nvm/internal/tui/components"
@@ -89,7 +90,7 @@ func GetNodeVersionURL(version string) (string, error) {
 			return "", fmt.Errorf("unsupported architecture: %s", runtime.GOARCH)
 		}
 	case "darwin", "linux":
-		return fmt.Sprintf("https://nodejs.org/dist/%s/node-%s-linux-x64.tar.xz", version, version), nil
+		return fmt.Sprintf("https://nodejs.org/dist/%s/node-%s-linux-x64.tar.gz", version, version), nil
 	default:
 		return "", fmt.Errorf("unsupported platform: %s", runtime.GOOS)
 	}
@@ -125,10 +126,25 @@ func setDirectoryPath(version string) (string, error) {
 	return versionPath, nil
 }
 
-func extractTarWithProgress(tarFile io.Reader, installPath string) error {
+func extractTarWithProgress(tarFile *os.File, installPath string) error {
 	util.Logger.Infof("extracting tar file to %s", installPath)
-	gzr, err := gzip.NewReader(tarFile)
+	// Seek back to the beginning of the file
+	_, err := tarFile.Seek(0, 0)
 	if err != nil {
+		util.Logger.Errorf("Error seeking to beginning of file: %v", err)
+		return err
+	}
+
+	fileContents, err := io.ReadAll(tarFile)
+	if err != nil {
+		util.Logger.Errorf("Error reading entire file: %v", err)
+		return err
+	}
+	util.Logger.Infof("Read %d bytes from file", len(fileContents))
+
+	gzr, err := gzip.NewReader(bytes.NewReader(fileContents))
+	if err != nil {
+		util.Logger.Errorf("Error creating gzip reader from memory: %v", err)
 		return err
 	}
 	defer gzr.Close()
@@ -138,8 +154,6 @@ func extractTarWithProgress(tarFile io.Reader, installPath string) error {
 	util.Logger.Infof("starting to extract files")
 	for {
 		header, err := tr.Next()
-		util.Logger.Debugf("header: %v", header)
-		util.Logger.Debugf("err: %v", err)
 		if err == io.EOF {
 			break
 		}
