@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"sync"
 
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
@@ -60,29 +61,64 @@ func newProgressModel(total int64) progressModel {
 
 func CopyWithProgress(dst io.Writer, src io.Reader, size int64, description string) error {
 	model := newProgressModel(size)
-
 	p := tea.NewProgram(model)
 
+	var wg sync.WaitGroup
+	wg.Add(1)
+
 	go func() {
-		buf := make([]byte, 1024)
+		defer wg.Done()
+		buf := make([]byte, 32*1024)
 		for {
 			n, err := src.Read(buf)
 			if n > 0 {
-				dst.Write(buf[:n])
+				_, writeErr := dst.Write(buf[:n])
+				if writeErr != nil {
+					p.Send(writeErr)
+					return
+				}
 				p.Send(model.current + int64(n))
 			}
 			if err != nil {
 				if err != io.EOF {
-					fmt.Println("Error:", err)
+					p.Send(err)
+				} else {
+					p.Send(nil) // Signal successful completion
 				}
 				return
 			}
 		}
 	}()
 
-	if _, err := p.Run(); err != nil {
-		return err
+	// Run the program in a separate goroutine
+	errChan := make(chan error, 1)
+	go func() {
+		_, err := p.Run()
+		fmt.Printf("Program exited: %v\n", err)
+		errChan <- err
+	}()
+
+	// Wait for either the copy operation to complete or the program to exit
+	var err error
+	select {
+	case err = <-errChan:
+		// Program exited, cancel the copy operation if it's still running
+		// You might need to implement a cancellation mechanism in your model
+	case <-waitGroupToChan(&wg):
+		// Copy operation completed, quit the program
+		p.Quit()
+		err = <-errChan
 	}
 
-	return nil
+	return err
+}
+
+// Helper function to convert WaitGroup to a channel
+func waitGroupToChan(wg *sync.WaitGroup) <-chan struct{} {
+	ch := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+	return ch
 }

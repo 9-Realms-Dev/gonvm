@@ -7,7 +7,7 @@ import (
 )
 
 var uninstallCmd = &cobra.Command{
-	Use:   "uninstall [node version]",
+	Use:   "uninstall",
 	Short: "Uninstall a specific Node.js version",
 	Long:  "This will remove the version directory from your GO_NVM_DIR",
 	RunE:  UninstallNode,
@@ -25,7 +25,7 @@ func UninstallNode(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if nvm.CheckNodeVersionInstalled(installPath) {
+	if nvm.IsNodeVersionInstalled(installPath) {
 		util.Logger.Infof("Uninstalling node %s...", reqVersion)
 		err := nvm.RemoveVersionByPath(installPath)
 		if err != nil {

@@ -9,7 +9,7 @@ import (
 )
 
 var lsCmd = &cobra.Command{
-	Use:   "go_nvm ls",
+	Use:   "ls",
 	Short: "List installed Node.js versions",
 	Long:  "This command lists all Node.js versions installed locally",
 	Args:  cobra.NoArgs,
@@ -17,7 +17,7 @@ var lsCmd = &cobra.Command{
 }
 
 var lsRemoteCmd = &cobra.Command{
-	Use:   "go_nvm ls-remote",
+	Use:   "ls-remote",
 	Short: "List available Node.js versions",
 	Long:  "This command lists all Node.js versions available for installation",
 	Args:  cobra.NoArgs,

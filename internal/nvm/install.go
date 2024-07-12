@@ -4,13 +4,13 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"fmt"
+	tui "github.com/9-Realms-Dev/go_nvm/internal/tui/components"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
 
-	tui "github.com/9-Realms-Dev/go_nvm/internal/tui/components"
 	"github.com/9-Realms-Dev/go_nvm/internal/util"
 )
 
@@ -21,6 +21,7 @@ func DownloadAndSetupNode(url, installPath string) error {
 	}
 
 	// Download the Node.js binary
+	util.Logger.Debugf("downloading node.js from %s", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
@@ -44,7 +45,6 @@ func DownloadAndSetupNode(url, installPath string) error {
 
 	// Extract the file if needed
 	if runtime.GOOS != "windows" {
-		file.Seek(0, 0)
 		if err := extractTarWithProgress(file, installPath); err != nil {
 			return err
 		}
@@ -56,6 +56,7 @@ func DownloadAndSetupNode(url, installPath string) error {
 		}
 
 		for _, entry := range entries {
+			util.Logger.Infof("entry: %s", entry.Name())
 			if entry.IsDir() {
 				oldDir := filepath.Join(installPath, entry.Name())
 				if err := shiftContent(installPath, oldDir); err != nil {
@@ -125,6 +126,7 @@ func setDirectoryPath(version string) (string, error) {
 }
 
 func extractTarWithProgress(tarFile io.Reader, installPath string) error {
+	util.Logger.Infof("extracting tar file to %s", installPath)
 	gzr, err := gzip.NewReader(tarFile)
 	if err != nil {
 		return err
@@ -133,8 +135,11 @@ func extractTarWithProgress(tarFile io.Reader, installPath string) error {
 
 	tr := tar.NewReader(gzr)
 
+	util.Logger.Infof("starting to extract files")
 	for {
 		header, err := tr.Next()
+		util.Logger.Debugf("header: %v", header)
+		util.Logger.Debugf("err: %v", err)
 		if err == io.EOF {
 			break
 		}

@@ -7,7 +7,7 @@ import (
 )
 
 var installCmd = &cobra.Command{
-	Use:   "go_nvm install [node version]",
+	Use:   "install",
 	Short: "This will go get and install the node version",
 	Long:  "installing a node version puts it in your GO_NVM_DIR/versions directory to be used for symlinks",
 	Args:  cobra.MinimumNArgs(1),
@@ -31,11 +31,11 @@ func InstallNode(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	util.Logger.Infof("checking if %s is installed....", nodeVersion)
-	if nvm.CheckNodeVersionInstalled(installPath) {
-		util.Logger.Warnf("node %s is already installed", nodeVersion)
-		return nil
-	}
+	//util.Logger.Infof("checking if %s is installed....", nodeVersion)
+	//if nvm.IsNodeVersionInstalled(installPath) {
+	//	util.Logger.Warnf("node %s is already installed", nodeVersion)
+	//	return nil
+	//}
 
 	url, err := nvm.GetNodeVersionURL(nodeVersion)
 	if err != nil {

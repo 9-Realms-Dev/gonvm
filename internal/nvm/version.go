@@ -244,7 +244,8 @@ func GetRemoteLatestVersion() (string, error) {
 }
 
 func GetRemoteLTSVersion() (string, error) {
-	url := "https://nodejs.org/en/"
+	util.Logger.Info("Checking for latest LTS version...")
+	url := "https://nodejs.org/en"
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", fmt.Errorf("error making HTTP request: %w", err)
@@ -257,14 +258,17 @@ func GetRemoteLTSVersion() (string, error) {
 			return "", fmt.Errorf("error parsing HTML: %w", err)
 		}
 
-		var ltsVersion string
-		doc.Find("a[title]").Each(func(i int, s *goquery.Selection) {
-			title, _ := s.Attr("title")
+		var ltsVersionLink string
+		doc.Find("a").Each(func(i int, s *goquery.Selection) {
+			title := s.Text()
+			util.Logger.Debugf("Title: %s", title)
 			if regexp.MustCompile(`LTS`).MatchString(title) {
-				ltsVersion, _ = s.Attr("data-version")
+				ltsVersionLink, _ = s.Attr("href")
 				return
 			}
 		})
+
+		ltsVersion := extractVersionNumber(ltsVersionLink)
 
 		if ltsVersion == "" {
 			return "", fmt.Errorf("could not find latest LTS version")
@@ -305,14 +309,11 @@ func RemoteVersions() ([]string, error) {
 		}
 
 		versions := []string{}
-		re := regexp.MustCompile(`v[0-9]+\.[0-9]+\.[0-9]+`)
 
 		doc.Find("a").Each(func(i int, s *goquery.Selection) {
 			href, _ := s.Attr("href")
-			matches := re.FindStringSubmatch(href)
-			if len(matches) > 0 {
-				versions = append(versions, matches[0])
-			}
+			match := extractVersionNumber(href)
+			versions = append(versions, match)
 		})
 
 		return versions, nil
@@ -366,7 +367,7 @@ func LocalVersions() ([]string, error) {
 	return versions, nil
 }
 
-func CheckNodeVersionInstalled(versionPath string) bool {
+func IsNodeVersionInstalled(versionPath string) bool {
 	_, err := os.Stat(versionPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -379,6 +380,15 @@ func CheckNodeVersionInstalled(versionPath string) bool {
 		return false
 	}
 	return true
+}
+
+func extractVersionNumber(href string) string {
+	re := regexp.MustCompile(`v[0-9]+\.[0-9]+\.[0-9]+`)
+	matches := re.FindStringSubmatch(href)
+	if len(matches) > 0 {
+		return matches[0]
+	}
+	return ""
 }
 
 func CheckValidVersionPattern(version string) bool {

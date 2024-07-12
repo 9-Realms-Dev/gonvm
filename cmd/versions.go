@@ -13,3 +13,7 @@ var versionCmd = &cobra.Command{
 		log.Info("v2.0.0")
 	},
 }
+
+func init() {
+	rootCmd.AddCommand(versionCmd)
+}

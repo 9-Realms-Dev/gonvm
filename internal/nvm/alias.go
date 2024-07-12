@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/9-Realms-Dev/go_nvm/internal/util"
-	"github.com/charmbracelet/log"
 	"github.com/spf13/viper"
 )
 
@@ -63,7 +62,7 @@ func SetAliasedVersion(name, version string) error {
 		return fmt.Errorf("error saving aliases: %w", err)
 	}
 
-	log.Info("Created alias %s for %s\n", name, version)
+	util.Logger.Infof("Created alias %s for %s\n", name, version)
 	return nil
 }
 

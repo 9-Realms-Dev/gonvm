@@ -33,8 +33,8 @@ func UseNvm(cmd *cobra.Command, args []string) error {
 	}
 
 	util.Logger.Infof("checking if %s is set....", nodeVersion)
-	if !nvm.CheckNodeVersionInstalled(versionPath) {
-		confirmation, err := tui.ConfirmPrompt(fmt.Sprintf("node %s is not installed. Would you like to install it?"))
+	if !nvm.IsNodeVersionInstalled(versionPath) {
+		confirmation, err := tui.ConfirmPrompt(fmt.Sprintf("node %s is not installed. Would you like to install it?", nodeVersion))
 		if err != nil {
 			return err
 		}

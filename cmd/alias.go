@@ -7,7 +7,7 @@ import (
 )
 
 var aliasCmd = &cobra.Command{
-	Use:   "go_nvm alias [name] [version]",
+	Use:   "alias",
 	Short: "Create an alias for a Node.js version",
 	Long:  "This command creates an alias for a specific Node.js version",
 	Args:  cobra.ExactArgs(2),
@@ -15,7 +15,7 @@ var aliasCmd = &cobra.Command{
 }
 
 var unaliasCmd = &cobra.Command{
-	Use:   "go_nvm unalias [name]",
+	Use:   "unalias",
 	Short: "Remove an alias for a Node.js version",
 	Long:  "This command removes an existing alias for a Node.js version",
 	Args:  cobra.ExactArgs(1),

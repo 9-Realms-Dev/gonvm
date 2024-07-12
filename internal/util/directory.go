@@ -32,7 +32,7 @@ func SetDefaultDirectory() (string, error) {
 			return "", err
 		}
 		os.Setenv("GO_NVM_DIR", nvmDir)
-		Logger.Info("Created directory %s and set GO_NVM_DIR environment variable", nvmDir)
+		Logger.Infof("Created directory %s and set GO_NVM_DIR environment variable", nvmDir)
 	}
 
 	// Create the alias.json file if it doesn't exist
@@ -41,6 +41,7 @@ func SetDefaultDirectory() (string, error) {
 	v := viper.New()
 	v.SetConfigFile(aliasFile)
 	v.SetConfigType("toml")
+	v.AddConfigPath(nvmDir)
 
 	if _, err := os.Stat(aliasFile); os.IsNotExist(err) {
 		defaultConfig := map[string]string{
@@ -53,7 +54,7 @@ func SetDefaultDirectory() (string, error) {
 		if err := v.SafeWriteConfig(); err != nil {
 			return "", fmt.Errorf("unable to write default config: %v", err)
 		}
-		Logger.Info("Created alias file %s", aliasFile)
+		Logger.Infof("Created alias file %s", aliasFile)
 	}
 
 	return nvmDir, nil
