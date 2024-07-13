@@ -94,7 +94,6 @@ func CopyWithProgress(dst io.Writer, src io.Reader, size int64, description stri
 	errChan := make(chan error, 1)
 	go func() {
 		_, err := p.Run()
-		fmt.Printf("Program exited: %v\n", err)
 		errChan <- err
 	}()
 

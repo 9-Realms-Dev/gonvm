@@ -16,6 +16,7 @@ var installCmd = &cobra.Command{
 
 func init() {
 	// TODO: Add flags for getting the latest versions
+	// TODO: Add flag for accepting all prompts
 	rootCmd.AddCommand(installCmd)
 }
 
