@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 
@@ -199,4 +200,45 @@ func shiftContent(installPath, oldDir string) error {
 	}
 
 	return os.Remove(oldDir)
+}
+
+func installNpm(version string, nodePath string) error {
+	// Download npm
+	npmUrl := fmt.Sprintf("https://github.com/npm/cli/archive/v%s.tar.gz", version)
+	resp, err := http.Get(npmUrl)
+	if err != nil {
+		return fmt.Errorf("failed to download npm: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Create a temporary file to store the downloaded content
+	tmpfile, err := os.CreateTemp("", "npm-*.tar.gz")
+	if err != nil {
+		return fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer os.Remove(tmpfile.Name())
+
+	// Copy the downloaded content to the temp file
+	_, err = io.Copy(tmpfile, resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to write npm archive: %w", err)
+	}
+
+	// Extract npm
+	npmPath := filepath.Join(nodePath, "lib", "node_modules", "npm")
+	err = extractTarWithProgress(tmpfile, npmPath)
+	if err != nil {
+		return fmt.Errorf("failed to extract npm: %w", err)
+	}
+
+	// Install npm
+	cmd := exec.Command(filepath.Join(nodePath, "bin", "node"), "bin/npm-cli.js", "install", "-g")
+	cmd.Dir = npmPath
+	cmd.Env = append(os.Environ(), fmt.Sprintf("PATH=%s:$PATH", filepath.Join(nodePath, "bin")))
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to install npm: %s, %w", output, err)
+	}
+
+	return nil
 }
