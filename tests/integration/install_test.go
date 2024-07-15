@@ -10,8 +10,8 @@ import (
 
 func TestInstallLts(t *testing.T) {
 	version := "lts"
-	cmd := exec.Command("gonvm", "install", version)
+	cmd := exec.Command("gonvm", "install", "-y", version)
 	output, err := cmd.CombinedOutput()
 	assert.NoError(t, err)
-	assert.Contains(t, string(output), "as the latest LTS version")
+	assert.Contains(t, string(output), "as the latest lts version")
 }

@@ -15,14 +15,20 @@ var installCmd = &cobra.Command{
 }
 
 func init() {
-	// TODO: Add flags for getting the latest versions
-	// TODO: Add flag for accepting all prompts
+	installCmd.PersistentFlags().BoolVarP(&latestFlag, "latest", "l", false, "get the latest version")
+	installCmd.PersistentFlags().BoolVarP(&acceptAllFlag, "yes", "y", false, "accept all prompts")
 	rootCmd.AddCommand(installCmd)
 }
 
 func InstallNode(cmd *cobra.Command, args []string) error {
 	util.Logger.Info("checking if version exists....")
-	nodeVersion, err := nvm.GetVersion(args[0], true)
+	checkLatest, err := cmd.Flags().GetBool("latest")
+	acceptAll, err := cmd.Flags().GetBool("yes")
+	if err != nil {
+		return err
+	}
+
+	nodeVersion, err := nvm.GetVersion(args[0], checkLatest, acceptAll)
 	if err != nil {
 		return err
 	}
@@ -32,11 +38,11 @@ func InstallNode(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	//util.Logger.Infof("checking if %s is installed....", nodeVersion)
-	//if nvm.IsNodeVersionInstalled(installPath) {
-	//	util.Logger.Warnf("node %s is already installed", nodeVersion)
-	//	return nil
-	//}
+	util.Logger.Infof("checking if %s is installed....", nodeVersion)
+	if nvm.IsNodeVersionInstalled(installPath) {
+		util.Logger.Warnf("node %s is already installed", nodeVersion)
+		return nil
+	}
 
 	url, err := nvm.GetNodeVersionURL(nodeVersion)
 	if err != nil {

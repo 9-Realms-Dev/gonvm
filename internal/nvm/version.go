@@ -13,16 +13,16 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func GetVersion(version string, checkLatest bool) (string, error) {
+func GetVersion(version string, checkLatest, acceptAll bool) (string, error) {
 	if checkLatest {
 		if version == "latest" {
 			fmt.Println(tui.InfoStyle.Render("Checking for latest version..."))
-			return GetRemoteLatestVersion()
+			return GetRemoteLatestVersion(acceptAll)
 		}
 
 		if version == "lts" {
 			fmt.Println(tui.InfoStyle.Render("Checking for latest LTS version..."))
-			return GetRemoteLTSVersion()
+			return GetRemoteLTSVersion(acceptAll)
 		}
 
 		if !strings.HasPrefix(version, "v") {
@@ -33,14 +33,14 @@ func GetVersion(version string, checkLatest bool) (string, error) {
 		return GetRemoteVersion(version)
 	} else {
 		if CheckValidVersionPattern(version) {
-			return GetLocalVersion(version)
+			return GetLocalVersion(version, checkLatest, acceptAll)
 		} else {
-			return GetAliasVersion(version)
+			return GetAliasVersion(version, acceptAll)
 		}
 	}
 }
 
-func GetAliasVersion(alias string) (string, error) {
+func GetAliasVersion(alias string, acceptAll bool) (string, error) {
 	// First, try to get the aliased version
 	aliasVersion, err := GetAliasedVersion(alias)
 	if err != nil {
@@ -54,6 +54,18 @@ func GetAliasVersion(alias string) (string, error) {
 
 	// If alias is 'latest' or 'lts' and not found, prompt user to fetch remote version
 	if alias == "latest" || alias == "lts" {
+		if acceptAll {
+			// TODO: Refactor into a function
+			fmt.Println(tui.PromptStyle.Render("Fetching remote version..."))
+			// Assuming we have a getVersion function that can fetch the latest version
+			version, err := GetVersion(alias, true, acceptAll)
+			if err != nil {
+				return "", fmt.Errorf("error fetching remote version: %w", err)
+			}
+			fmt.Println(tui.PromptStyle.Render(fmt.Sprintf("Found remote version: %s", version)))
+			return version, nil
+		}
+
 		question := fmt.Sprintf("%s not found. Would you like to get remote %s version?", alias, alias)
 		confirm, err := tui.ConfirmPrompt(question)
 		if err != nil {
@@ -61,9 +73,10 @@ func GetAliasVersion(alias string) (string, error) {
 		}
 
 		if confirm {
+			// TODO: Refactor into a function
 			fmt.Println(tui.PromptStyle.Render("Fetching remote version..."))
 			// Assuming we have a getVersion function that can fetch the latest version
-			version, err := GetVersion(alias, true)
+			version, err := GetVersion(alias, true, acceptAll)
 			if err != nil {
 				return "", fmt.Errorf("error fetching remote version: %w", err)
 			}
@@ -76,7 +89,7 @@ func GetAliasVersion(alias string) (string, error) {
 	return "", nil
 }
 
-func GetLocalVersion(version string) (string, error) {
+func GetLocalVersion(version string, checklatest, acceptAll bool) (string, error) {
 	versions, err := LocalVersions()
 	if err != nil {
 		return "", fmt.Errorf("error getting local versions: %w", err)
@@ -100,7 +113,7 @@ func GetLocalVersion(version string) (string, error) {
 		if confirm {
 			fmt.Println(tui.PromptStyle.Render("Fetching and installing version..."))
 			// Assuming we have a getVersion function that can fetch and install the version
-			installedVersion, err := GetVersion(version, true)
+			installedVersion, err := GetVersion(version, checklatest, acceptAll)
 			if err != nil {
 				return "", fmt.Errorf("error fetching and installing version: %w", err)
 			}
@@ -196,7 +209,7 @@ func GetRemoteVersions(version string) ([]string, error) {
 	}
 }
 
-func GetRemoteLatestVersion() (string, error) {
+func GetRemoteLatestVersion(acceptAll bool) (string, error) {
 	url := "https://nodejs.org/dist/latest/"
 	resp, err := http.Get(url)
 	if err != nil {
@@ -225,18 +238,7 @@ func GetRemoteLatestVersion() (string, error) {
 		}
 
 		question := fmt.Sprintf("Would you like to set %s as the default latest version?", latestVersion)
-		setLatest, err := tui.ConfirmPrompt(question)
-		if err != nil {
-			return "", fmt.Errorf("error during user prompt: %w", err)
-		}
-
-		if setLatest {
-			err := SetAliasedVersion("latest", latestVersion)
-			if err != nil {
-				return "", fmt.Errorf("error setting aliased version: %w", err)
-			}
-			fmt.Println(tui.InfoStyle.Render(fmt.Sprintf("Set %s as the latest version", latestVersion)))
-		}
+		err = confirmLatest(question, latestVersion, "latest", acceptAll)
 
 		return latestVersion, nil
 	} else {
@@ -244,7 +246,7 @@ func GetRemoteLatestVersion() (string, error) {
 	}
 }
 
-func GetRemoteLTSVersion() (string, error) {
+func GetRemoteLTSVersion(acceptAll bool) (string, error) {
 	util.Logger.Info("Checking for latest LTS version...")
 	url := "https://nodejs.org/en"
 	resp, err := http.Get(url)
@@ -282,18 +284,12 @@ func GetRemoteLTSVersion() (string, error) {
 
 		if aliasVersion != ltsVersion {
 			question := fmt.Sprintf("Would you like to set %s as the default LTS version?", ltsVersion)
-			setLTS, err := tui.ConfirmPrompt(question)
+			err = confirmLatest(question, ltsVersion, "lts", acceptAll)
 			if err != nil {
-				return "", fmt.Errorf("error during user prompt: %w", err)
+				return "", err
 			}
-
-			if setLTS {
-				err := SetAliasedVersion("lts", ltsVersion)
-				if err != nil {
-					return "", fmt.Errorf("error setting aliased version: %w", err)
-				}
-				fmt.Println(tui.InfoStyle.Render(fmt.Sprintf("Set %s as the latest LTS version", ltsVersion)))
-			}
+		} else {
+			fmt.Println(tui.InfoStyle.Render(fmt.Sprintf("Latest LTS version is already set to %s", ltsVersion)))
 		}
 
 		return ltsVersion, nil
@@ -391,6 +387,12 @@ func IsNodeVersionInstalled(versionPath string) bool {
 	return true
 }
 
+func CheckValidVersionPattern(version string) bool {
+	versionPattern := `^(v?\d+(\.\d+){0,2})$`
+	match, _ := regexp.MatchString(versionPattern, version)
+	return match
+}
+
 func extractVersionNumber(href string) string {
 	re := regexp.MustCompile(`v[0-9]+\.[0-9]+\.[0-9]+`)
 	matches := re.FindStringSubmatch(href)
@@ -412,8 +414,23 @@ func matchNodeArchive(filename string) (bool, string) {
 	return true, matches[1] // matches[1] contains the version number
 }
 
-func CheckValidVersionPattern(version string) bool {
-	versionPattern := `^(v?\d+(\.\d+){0,2})$`
-	match, _ := regexp.MatchString(versionPattern, version)
-	return match
+func confirmLatest(question, version, alias string, acceptAll bool) error {
+	var setLatest bool
+	var err error
+	if !acceptAll {
+		setLatest, err = tui.ConfirmPrompt(question)
+		if err != nil {
+			return fmt.Errorf("error during user prompt: %w", err)
+		}
+	}
+
+	if setLatest || acceptAll {
+		err := SetAliasedVersion(alias, version)
+		if err != nil {
+			return fmt.Errorf("error setting aliased version: %w", err)
+		}
+		fmt.Println(tui.InfoStyle.Render(fmt.Sprintf("Set %s as the latest %s version", version, alias)))
+	}
+
+	return nil
 }

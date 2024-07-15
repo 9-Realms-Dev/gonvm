@@ -18,12 +18,19 @@ var useCmd = &cobra.Command{
 }
 
 func init() {
-	// TODO: Add flags for getting the latest versions
+	useCmd.Flags().BoolVarP(&latestFlag, "latest", "l", false, "get the latest version")
+	useCmd.Flags().BoolVarP(&acceptAllFlag, "yes", "y", false, "accept all prompts")
 	rootCmd.AddCommand(useCmd)
 }
 
 func UseNvm(cmd *cobra.Command, args []string) error {
-	nodeVersion, err := nvm.GetVersion(args[0], true)
+	checkLatest, err := cmd.Flags().GetBool("latest")
+	acceptAll, err := cmd.Flags().GetBool("yes")
+	if err != nil {
+		return err
+	}
+
+	nodeVersion, err := nvm.GetVersion(args[0], checkLatest, acceptAll)
 	if err != nil {
 		return err
 	}

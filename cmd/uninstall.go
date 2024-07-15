@@ -15,7 +15,8 @@ var uninstallCmd = &cobra.Command{
 
 func UninstallNode(cmd *cobra.Command, args []string) error {
 	reqVersion := args[0]
-	nodeVersion, err := nvm.GetVersion(reqVersion, false)
+	// TODO: Replace with get local versions
+	nodeVersion, err := nvm.GetVersion(reqVersion, false, false)
 	if err != nil {
 		return err
 	}

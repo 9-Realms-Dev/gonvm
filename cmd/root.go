@@ -9,6 +9,10 @@ var (
 	cfgFile     string
 	userLicense string
 
+	// globally flags
+	latestFlag    bool = false
+	acceptAllFlag bool = false
+
 	rootCmd = &cobra.Command{
 		Use:   "gonvm",
 		Short: "Go based nvm",
