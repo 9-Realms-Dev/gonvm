@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 
@@ -73,6 +72,11 @@ func DownloadAndSetupNode(url, installPath string) error {
 		if err := os.Rename(fileName, newPath); err != nil {
 			return err
 		}
+	}
+
+	err = setupNpm(installPath)
+	if err != nil {
+		return err
 	}
 
 	// Remove the downloaded file
@@ -202,43 +206,46 @@ func shiftContent(installPath, oldDir string) error {
 	return os.Remove(oldDir)
 }
 
-func installNpm(version string, nodePath string) error {
-	// Download npm
-	npmUrl := fmt.Sprintf("https://github.com/npm/cli/archive/v%s.tar.gz", version)
-	resp, err := http.Get(npmUrl)
-	if err != nil {
-		return fmt.Errorf("failed to download npm: %w", err)
-	}
-	defer resp.Body.Close()
+func setupNpm(installPath string) error {
+	npmPath := filepath.Join(installPath, "lib", "node_modules", "npm")
+	binPath := filepath.Join(installPath, "bin")
+	nodeBin := filepath.Join(binPath, "node")
 
-	// Create a temporary file to store the downloaded content
-	tmpfile, err := os.CreateTemp("", "npm-*.tar.gz")
-	if err != nil {
-		return fmt.Errorf("failed to create temp file: %w", err)
-	}
-	defer os.Remove(tmpfile.Name())
-
-	// Copy the downloaded content to the temp file
-	_, err = io.Copy(tmpfile, resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to write npm archive: %w", err)
+	// Ensure the bin directory exists
+	if err := os.MkdirAll(binPath, 0755); err != nil {
+		return fmt.Errorf("failed to create bin directory: %v", err)
 	}
 
-	// Extract npm
-	npmPath := filepath.Join(nodePath, "lib", "node_modules", "npm")
-	err = extractTarWithProgress(tmpfile, npmPath)
-	if err != nil {
-		return fmt.Errorf("failed to extract npm: %w", err)
+	// Create npm executable
+	npmBin := filepath.Join(binPath, "npm")
+	npmContent := fmt.Sprintf(`#!/bin/sh
+export NPM_CONFIG_PREFIX="%s"
+if [ -x "%s" ]; then
+  "%s" "%s/bin/npm-cli.js" "$@"
+else
+  echo "node executable not found at %s"
+  exit 1
+fi
+`, installPath, nodeBin, nodeBin, npmPath, nodeBin)
+	if err := os.WriteFile(npmBin, []byte(npmContent), 0755); err != nil {
+		return fmt.Errorf("failed to create npm executable: %v", err)
 	}
 
-	// Install npm
-	cmd := exec.Command(filepath.Join(nodePath, "bin", "node"), "bin/npm-cli.js", "install", "-g")
-	cmd.Dir = npmPath
-	cmd.Env = append(os.Environ(), fmt.Sprintf("PATH=%s:$PATH", filepath.Join(nodePath, "bin")))
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to install npm: %s, %w", output, err)
+	// Create npx executable (similar changes)
+	npxBin := filepath.Join(binPath, "npx")
+	npxContent := fmt.Sprintf(`#!/bin/sh
+export NPM_CONFIG_PREFIX="%s"
+if [ -x "%s" ]; then
+  "%s" "%s/bin/npx-cli.js" "$@"
+else
+  echo "node executable not found at %s"
+  exit 1
+fi
+`, installPath, nodeBin, nodeBin, npmPath, nodeBin)
+	if err := os.WriteFile(npxBin, []byte(npxContent), 0755); err != nil {
+		return fmt.Errorf("failed to create npx executable: %v", err)
 	}
 
+	fmt.Println("npm and npx have been set up successfully")
 	return nil
 }
