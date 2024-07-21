@@ -5,8 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	tui "github.com/9-Realms-Dev/go_nvm/internal/tui/components"
-	"github.com/9-Realms-Dev/go_nvm/internal/util"
+	"github.com/9-Realms-Dev/gonvm/internal/util"
 )
 
 func SetCurrentVersion(versionPath string) error {
@@ -18,7 +17,7 @@ func SetCurrentVersion(versionPath string) error {
 	}
 
 	if isLinked {
-		fmt.Println(tui.SuccessStyle.Render(fmt.Sprintf("Now using node %s", version)))
+		fmt.Println(styles.SuccessStyle.Render(fmt.Sprintf("Now using node %s", version)))
 	} else {
 		return fmt.Errorf("could not set node %s", version)
 	}

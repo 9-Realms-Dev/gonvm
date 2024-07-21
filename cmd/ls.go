@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/9-Realms-Dev/go_nvm/internal/nvm"
-	"github.com/9-Realms-Dev/go_nvm/internal/util"
+	"github.com/9-Realms-Dev/gonvm/internal/nvm"
+	"github.com/9-Realms-Dev/gonvm/internal/util"
 	"github.com/spf13/cobra"
 )
 
