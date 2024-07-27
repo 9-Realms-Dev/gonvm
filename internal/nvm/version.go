@@ -2,26 +2,27 @@ package nvm
 
 import (
 	"fmt"
+	"github.com/9-Realms-Dev/gonvm/internal/tui/styles"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
-	tui "github.com/9-Realms-Dev/go_nvm/internal/tui/components"
-	"github.com/9-Realms-Dev/go_nvm/internal/util"
+	tui "github.com/9-Realms-Dev/gonvm/internal/tui/components"
+	"github.com/9-Realms-Dev/gonvm/internal/util"
 	"github.com/PuerkitoBio/goquery"
 )
 
 func GetVersion(version string, checkLatest, acceptAll bool) (string, error) {
 	if checkLatest {
 		if version == "latest" {
-			fmt.Println(tui.InfoStyle.Render("Checking for latest version..."))
+			fmt.Println(styles.InfoStyle.Render("Checking for latest version..."))
 			return GetRemoteLatestVersion(acceptAll)
 		}
 
 		if version == "lts" {
-			fmt.Println(tui.InfoStyle.Render("Checking for latest LTS version..."))
+			fmt.Println(styles.InfoStyle.Render("Checking for latest LTS version..."))
 			return GetRemoteLTSVersion(acceptAll)
 		}
 
@@ -29,7 +30,7 @@ func GetVersion(version string, checkLatest, acceptAll bool) (string, error) {
 			version = "v" + version
 		}
 
-		fmt.Println(tui.InfoStyle.Render(fmt.Sprintf("Checking for version %s...", version)))
+		fmt.Println(styles.InfoStyle.Render(fmt.Sprintf("Checking for version %s...", version)))
 		return GetRemoteVersion(version)
 	} else {
 		if CheckValidVersionPattern(version) {
@@ -48,7 +49,7 @@ func GetAliasVersion(alias string, acceptAll bool) (string, error) {
 	}
 
 	if aliasVersion != "" {
-		fmt.Println(tui.PromptStyle.Render(fmt.Sprintf("Found alias version: %s", aliasVersion)))
+		fmt.Println(styles.PromptStyle.Render(fmt.Sprintf("Found alias version: %s", aliasVersion)))
 		return aliasVersion, nil
 	}
 
@@ -56,13 +57,13 @@ func GetAliasVersion(alias string, acceptAll bool) (string, error) {
 	if alias == "latest" || alias == "lts" {
 		if acceptAll {
 			// TODO: Refactor into a function
-			fmt.Println(tui.PromptStyle.Render("Fetching remote version..."))
+			fmt.Println(styles.PromptStyle.Render("Fetching remote version..."))
 			// Assuming we have a getVersion function that can fetch the latest version
 			version, err := GetVersion(alias, true, acceptAll)
 			if err != nil {
 				return "", fmt.Errorf("error fetching remote version: %w", err)
 			}
-			fmt.Println(tui.PromptStyle.Render(fmt.Sprintf("Found remote version: %s", version)))
+			fmt.Println(styles.PromptStyle.Render(fmt.Sprintf("Found remote version: %s", version)))
 			return version, nil
 		}
 
@@ -74,18 +75,18 @@ func GetAliasVersion(alias string, acceptAll bool) (string, error) {
 
 		if confirm {
 			// TODO: Refactor into a function
-			fmt.Println(tui.PromptStyle.Render("Fetching remote version..."))
+			fmt.Println(styles.PromptStyle.Render("Fetching remote version..."))
 			// Assuming we have a getVersion function that can fetch the latest version
 			version, err := GetVersion(alias, true, acceptAll)
 			if err != nil {
 				return "", fmt.Errorf("error fetching remote version: %w", err)
 			}
-			fmt.Println(tui.PromptStyle.Render(fmt.Sprintf("Found remote version: %s", version)))
+			fmt.Println(styles.PromptStyle.Render(fmt.Sprintf("Found remote version: %s", version)))
 			return version, nil
 		}
 	}
 
-	fmt.Println(tui.ErrorStyle.Render(fmt.Sprintf("No version found for alias: %s", alias)))
+	fmt.Println(styles.ErrorStyle.Render(fmt.Sprintf("No version found for alias: %s", alias)))
 	return "", nil
 }
 
@@ -111,17 +112,17 @@ func GetLocalVersion(version string, checklatest, acceptAll bool) (string, error
 		}
 
 		if confirm {
-			fmt.Println(tui.PromptStyle.Render("Fetching and installing version..."))
+			fmt.Println(styles.PromptStyle.Render("Fetching and installing version..."))
 			// Assuming we have a getVersion function that can fetch and install the version
 			installedVersion, err := GetVersion(version, checklatest, acceptAll)
 			if err != nil {
 				return "", fmt.Errorf("error fetching and installing version: %w", err)
 			}
-			fmt.Println(tui.PromptStyle.Render(fmt.Sprintf("Installed version: %s", installedVersion)))
+			fmt.Println(styles.PromptStyle.Render(fmt.Sprintf("Installed version: %s", installedVersion)))
 			return installedVersion, nil
 		}
 	} else {
-		fmt.Println(tui.ErrorStyle.Render("You have no local versions..."))
+		fmt.Println(styles.ErrorStyle.Render("You have no local versions..."))
 	}
 
 	return "", nil
@@ -376,11 +377,11 @@ func IsNodeVersionInstalled(versionPath string) bool {
 	_, err := os.Stat(filepath.Join(versionPath, "bin"))
 	if err != nil {
 		if os.IsNotExist(err) {
-			fmt.Println(tui.ErrorStyle.Render(fmt.Sprintf("Error: Could not find %s", versionPath)))
+			fmt.Println(styles.ErrorStyle.Render(fmt.Sprintf("Error: Could not find %s", versionPath)))
 		} else if os.IsPermission(err) {
-			fmt.Println(tui.ErrorStyle.Render(fmt.Sprintf("Error: Permission denied for %s", versionPath)))
+			fmt.Println(styles.ErrorStyle.Render(fmt.Sprintf("Error: Permission denied for %s", versionPath)))
 		} else {
-			fmt.Println(tui.ErrorStyle.Render(fmt.Sprintf("Error checking %s: %v", versionPath, err)))
+			fmt.Println(styles.ErrorStyle.Render(fmt.Sprintf("Error checking %s: %v", versionPath, err)))
 		}
 		return false
 	}

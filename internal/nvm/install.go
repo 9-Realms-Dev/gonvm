@@ -5,14 +5,14 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	tui "github.com/9-Realms-Dev/go_nvm/internal/tui/components"
+	tui "github.com/9-Realms-Dev/gonvm/internal/tui/components"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
 
-	"github.com/9-Realms-Dev/go_nvm/internal/util"
+	"github.com/9-Realms-Dev/gonvm/internal/util"
 )
 
 func DownloadAndSetupNode(url, installPath string) error {

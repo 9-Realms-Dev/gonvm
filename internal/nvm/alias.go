@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/9-Realms-Dev/go_nvm/internal/util"
+	"github.com/9-Realms-Dev/gonvm/internal/util"
 	"github.com/spf13/viper"
 )
 

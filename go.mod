@@ -1,4 +1,4 @@
-module github.com/9-Realms-Dev/go_nvm
+module github.com/9-Realms-Dev/gonvm
 
 go 1.22.0
 

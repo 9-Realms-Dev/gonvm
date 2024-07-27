@@ -2,32 +2,9 @@ package tui
 
 import (
 	"fmt"
+	"github.com/9-Realms-Dev/gonvm/internal/tui/styles"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-)
-
-var (
-	PromptStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("#FAFAFA")).
-			Background(lipgloss.Color("#7D56F4"))
-
-	InfoStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#00FFAA")).
-			Bold(true)
-
-	SuccessStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#00FFAA")).
-			Bold(true)
-
-	WarnStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFAA00")).
-			Bold(true)
-
-	ErrorStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FF0000")).
-			Bold(true)
 )
 
 type confirmModel struct {
@@ -60,11 +37,11 @@ func (m confirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m confirmModel) View() string {
 	if m.quitting {
 		if m.confirm {
-			return PromptStyle.Render("Confirmed!\n")
+			return styles.PromptStyle.Render("Confirmed!\n")
 		}
-		return ErrorStyle.Render("Cancelled.\n")
+		return styles.ErrorStyle.Render("Cancelled.\n")
 	}
-	return PromptStyle.Render(fmt.Sprintf("%s (y/N) ", m.question))
+	return styles.PromptStyle.Render(fmt.Sprintf("%s (y/N) ", m.question))
 }
 
 func ConfirmPrompt(question string) (bool, error) {
