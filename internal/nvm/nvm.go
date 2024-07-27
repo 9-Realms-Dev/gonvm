@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/9-Realms-Dev/gonvm/internal/tui/styles"
 	"github.com/9-Realms-Dev/gonvm/internal/util"
 )
 

@@ -99,7 +99,7 @@ func GetLocalVersion(version string, checklatest, acceptAll bool) (string, error
 	if len(versions) > 0 {
 		for _, v := range versions {
 			if v == version {
-				fmt.Println(tui.PromptStyle.Render(fmt.Sprintf("Found local version: %s", version)))
+				fmt.Println(styles.PromptStyle.Render(fmt.Sprintf("Found local version: %s", version)))
 				return version, nil
 			}
 		}
@@ -156,7 +156,7 @@ func GetRemoteVersion(version string) (string, error) {
 		}
 		return "", fmt.Errorf("no version number found in the last link")
 	} else {
-		fmt.Println(tui.WarnStyle.Render(fmt.Sprintf("Could not find version %s. Checking for latest version...", version)))
+		fmt.Println(styles.WarnStyle.Render(fmt.Sprintf("Could not find version %s. Checking for latest version...", version)))
 		latestVersions, err := GetRemoteVersions(version)
 		if err != nil {
 			return "", fmt.Errorf("error getting remote versions: %w", err)
@@ -164,7 +164,7 @@ func GetRemoteVersion(version string) (string, error) {
 		if len(latestVersions) > 0 {
 			return latestVersions[len(latestVersions)-1], nil
 		} else {
-			fmt.Println(tui.WarnStyle.Render(fmt.Sprintf("Could not find version %s", version[:3])))
+			fmt.Println(styles.WarnStyle.Render(fmt.Sprintf("Could not find version %s", version[:3])))
 			return "", nil
 		}
 	}
@@ -175,7 +175,7 @@ func GetRemoteVersions(version string) ([]string, error) {
 		version = version[:3]
 	}
 
-	fmt.Println(tui.InfoStyle.Render(fmt.Sprintf("Checking for versions starting with %s...", version)))
+	fmt.Println(styles.InfoStyle.Render(fmt.Sprintf("Checking for versions starting with %s...", version)))
 
 	url := "https://nodejs.org/dist/"
 	resp, err := http.Get(url)
@@ -290,7 +290,7 @@ func GetRemoteLTSVersion(acceptAll bool) (string, error) {
 				return "", err
 			}
 		} else {
-			fmt.Println(tui.InfoStyle.Render(fmt.Sprintf("Latest LTS version is already set to %s", ltsVersion)))
+			fmt.Println(styles.InfoStyle.Render(fmt.Sprintf("Latest LTS version is already set to %s", ltsVersion)))
 		}
 
 		return ltsVersion, nil
@@ -343,11 +343,11 @@ func LocalVersions() ([]string, error) {
 			if err != nil {
 				return nil, fmt.Errorf("error setting default directory: %w", err)
 			}
-			fmt.Println(tui.InfoStyle.Render(fmt.Sprintf("Set GO_NVM_DIR to %s", nvmDir)))
-			fmt.Println(tui.InfoStyle.Render("Run `go_nvm install <version>` to install a version of node"))
+			fmt.Println(styles.InfoStyle.Render(fmt.Sprintf("Set GO_NVM_DIR to %s", nvmDir)))
+			fmt.Println(styles.InfoStyle.Render("Run `go_nvm install <version>` to install a version of node"))
 			return []string{}, nil
 		} else {
-			fmt.Println(tui.WarnStyle.Render("GO_NVM_DIR not set."))
+			fmt.Println(styles.WarnStyle.Render("GO_NVM_DIR not set."))
 			return nil, nil
 		}
 	}
@@ -430,7 +430,7 @@ func confirmLatest(question, version, alias string, acceptAll bool) error {
 		if err != nil {
 			return fmt.Errorf("error setting aliased version: %w", err)
 		}
-		fmt.Println(tui.InfoStyle.Render(fmt.Sprintf("Set %s as the latest %s version", version, alias)))
+		fmt.Println(styles.InfoStyle.Render(fmt.Sprintf("Set %s as the latest %s version", version, alias)))
 	}
 
 	return nil
