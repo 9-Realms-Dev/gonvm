@@ -5,12 +5,13 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	tui "github.com/9-Realms-Dev/gonvm/internal/tui/components"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	tui "github.com/9-Realms-Dev/gonvm/internal/tui/components"
 
 	"github.com/9-Realms-Dev/gonvm/internal/util"
 )
@@ -94,7 +95,9 @@ func GetNodeVersionURL(version string) (string, error) {
 		default:
 			return "", fmt.Errorf("unsupported architecture: %s", runtime.GOARCH)
 		}
-	case "darwin", "linux":
+	case "darwin":
+		return fmt.Sprintf("https://nodejs.org/dist/%s/node-%s-darwin-x64.tar.gz", version, version), nil
+	case "linux":
 		return fmt.Sprintf("https://nodejs.org/dist/%s/node-%s-linux-x64.tar.gz", version, version), nil
 	default:
 		return "", fmt.Errorf("unsupported platform: %s", runtime.GOOS)
