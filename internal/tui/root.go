@@ -14,11 +14,6 @@ import (
 
 type errMsg error
 
-// TODO: Add details from the curreent version of nvm in the direcorty
-// TODO: Handle no versions in the directory
-// TODO: Show the available versions in the directory
-// TODO: Find out how to show the global imports in the current directory
-
 type model struct {
 	spinner  spinner.Model
 	current  services.NodeVersion
