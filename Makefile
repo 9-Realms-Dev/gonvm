@@ -1,3 +1,6 @@
+dev:
+	go run main.go
+
 docker_dev:
 	docker build -t go_nvm_dev .
 	docker run -it --rm go_nvm_dev:latest

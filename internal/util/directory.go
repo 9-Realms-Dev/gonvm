@@ -20,7 +20,6 @@ func GetNvmDirectory() (string, error) {
 func SetDefaultDirectory() (string, error) {
 	nvmDir := os.Getenv("GO_NVM_DIR")
 	if nvmDir == "" {
-		Logger.Warn("GO_NVM_DIR value is not set. Creating default directory...")
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
 			return "", err
@@ -32,7 +31,6 @@ func SetDefaultDirectory() (string, error) {
 			return "", err
 		}
 		os.Setenv("GO_NVM_DIR", nvmDir)
-		Logger.Infof("Created directory %s and set GO_NVM_DIR environment variable", nvmDir)
 	}
 
 	// Create the alias.json file if it doesn't exist
@@ -54,7 +52,6 @@ func SetDefaultDirectory() (string, error) {
 		if err := v.SafeWriteConfig(); err != nil {
 			return "", fmt.Errorf("unable to write default config: %v", err)
 		}
-		Logger.Infof("Created alias file %s", aliasFile)
 	}
 
 	return nvmDir, nil

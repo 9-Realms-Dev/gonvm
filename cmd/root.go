@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/charmbracelet/log"
+	"github.com/9-Realms-Dev/gonvm/internal/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,7 @@ var (
 )
 
 func ActivateTui(cmd *cobra.Command, args []string) {
-	log.Info("testing")
+	tui.Dashboard()
 }
 
 func Execute() error {

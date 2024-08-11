@@ -4,12 +4,18 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/9-Realms-Dev/gonvm/internal/tui/styles"
+
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 type errMsg error
+
+// TODO: Add details from the curreent version of nvm in the direcorty
+// TODO: Handle no versions in the directory
+// TODO: Show the available versions in the directory
+// TODO: Find out how to show the global imports in the current directory
 
 type model struct {
 	spinner  spinner.Model
@@ -20,7 +26,7 @@ type model struct {
 func initialModel() model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	s.Style = styles.SpinnerStyle
 	return model{spinner: s}
 }
 
@@ -61,7 +67,7 @@ func (m model) View() string {
 	return str
 }
 
-func main() {
+func Dashboard() {
 	p := tea.NewProgram(initialModel())
 	if _, err := p.Run(); err != nil {
 		fmt.Println(err)

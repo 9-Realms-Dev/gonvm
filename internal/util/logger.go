@@ -21,9 +21,11 @@ func init() {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
+
 		logFile, err := os.OpenFile(fmt.Sprintf("%s/debug.log", nvmDir), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
-			log.Fatal("Failed to open log file:", err)
+			fmt.Println(err.Error())
+			os.Exit(1)
 		}
 
 		Logger = log.New(logFile)
