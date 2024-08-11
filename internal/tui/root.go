@@ -3,7 +3,9 @@ package tui
 import (
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/9-Realms-Dev/gonvm/internal/tui/services"
 	"github.com/9-Realms-Dev/gonvm/internal/tui/styles"
 
 	"github.com/charmbracelet/bubbles/spinner"
@@ -19,6 +21,8 @@ type errMsg error
 
 type model struct {
 	spinner  spinner.Model
+	current  services.NodeVersion
+	versions []string
 	quitting bool
 	err      error
 }
@@ -27,10 +31,26 @@ func initialModel() model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = styles.SpinnerStyle
-	return model{spinner: s}
+
+	nodeVersion, err := services.GetCurrentDetails()
+	if err != nil {
+		os.Exit(1)
+	}
+
+	versions, err := services.GetVersions()
+	if err != nil {
+		os.Exit(1)
+	}
+
+	return model{
+		spinner:  s,
+		current:  *nodeVersion,
+		versions: versions,
+	}
 }
 
 func (m model) Init() tea.Cmd {
+
 	return m.spinner.Tick
 }
 
@@ -60,11 +80,24 @@ func (m model) View() string {
 	if m.err != nil {
 		return m.err.Error()
 	}
-	str := fmt.Sprintf("\n\n   %s coming soon please press q to quit\n\n", m.spinner.View())
-	if m.quitting {
-		return str + "\n"
+	var s strings.Builder
+
+	// Build the string to display at the top of the screen for the current version information
+	current := fmt.Sprintf("Node: %sNPM: %s", m.current.NodeVersion, m.current.NpmVersion)
+	s.WriteString(styles.HeaderStyle.Render(current))
+
+	s.WriteString("\n\nLocal Versions:\n")
+	for _, v := range m.versions {
+		s.WriteString(fmt.Sprintf("\n%s", v))
 	}
-	return str
+
+	// Help text
+	s.WriteString("\n\nPress 'q' to quit\n")
+
+	if m.quitting {
+		return "Quitting..."
+	}
+	return styles.BaseStyle.Render(s.String())
 }
 
 func Dashboard() {
